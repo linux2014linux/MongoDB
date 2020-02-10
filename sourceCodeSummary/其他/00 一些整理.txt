@@ -1,0 +1,74 @@
+
+1．	调整字节对齐
+size是原始大小，此处是以0xfff(4KB，刚好是虚页面大小)对齐。
+二者含义相同
+int newSize = (size + 0xfff) & 0xfffff000;
+int newOfs = (ofs + 0xfff) & ~0xfff;
+
+2．	记录时间变化类的简单设计
+class Timer {
+public:
+	Timer()
+{
+		_old = now();
+}
+	~Timer()
+{}
+	unsigned long long now()
+{
+		return <获取当前时间，以unsigned long long表示>;
+}
+unsigned long long get_delta()
+{
+		return now() - _old;
+}
+private:
+	unsigned long long _old;
+};
+
+3．	模板类的定义声明
+先看看使用：
+TSP_DECLARE(dur::ThreadLocalIntents,tlIntents)
+TSP_DEFINE(dur::ThreadLocalIntents,tlIntents)
+	此处只分析POSIX平台下的定义，TSP_DECLARE的定义如下：
+#define TSP_DECLARE(T,p) extern TSP<T> p;
+#define TSP_DEFINE(T,p) TSP<T> p;
+extern表示引用其他的变量是其他模块中的。TSP是一个类模板，如下：
+    template< class T>
+struct TSP {
+    // 该变量是使用线程局部存储需要声明的，该变量是线程局部存储对象的地址
+        pthread_key_t _key;
+    public:
+        TSP() {
+            verify( pthread_key_create( &_key, TSP::dodelete ) == 0 );
+        }
+
+        ~TSP() {
+            pthread_key_delete( _key );
+        }
+
+        static void dodelete( void* x ) {
+            T* t = reinterpret_cast<T*>(x);
+            delete t;
+        }
+        
+        T* get() const { 
+            return reinterpret_cast<T*>( pthread_getspecific( _key ) ); 
+        }
+        
+        void reset(T* v) { 
+            T* old = get();
+            delete old;
+            verify( pthread_setspecific( _key, v ) == 0 ); 
+        }
+
+        T* getMake() { 
+            T *t = get();
+            if( t == 0 ) {
+                t = new T();
+                reset( t );
+            }
+            return t;
+        }
+    };
+

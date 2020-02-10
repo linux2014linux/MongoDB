@@ -1,0 +1,7 @@
+本系列按照MongoDB2.6.12和3.0.12的源码进行分析。
+
+以2.6.12分析为主。偶尔会参考3.0.12的源码。
+
+参考链接
+http://blog.csdn.net/yhjj0108/article/details/8252154
+http://www.cnblogs.com/daizhj/archive/2011/03/18/1988288.html

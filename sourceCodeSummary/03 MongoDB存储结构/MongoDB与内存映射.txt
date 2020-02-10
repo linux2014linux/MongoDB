@@ -1,0 +1,19 @@
+网上说MongoDB会把所有的数据文件映射到虚存中，个人总觉得不太可能。现有MongoDB集群数据量占用磁盘空间的80%，根本不可能把所有数据映射到虚存中，虚存也没有这么大。
+如果有journal，那么占用虚存的空间将还会更大。
+
+内存映射的有点与缺点：
+优点：
+没有复杂的内存管理和磁盘管理代码，直接映射即可；
+操作系统会缓存，我们不用手动缓存；
+LRU；
+MongoDB重启后，Cache依然是可用的。
+
+
+缺点：
+磁盘碎片化严重时，这种映射将导致非常耗内存，而大多数内存都没有被使用；
+RAM usage is affected by high read-ahead.看不懂
+LRU behavior does not prioritize things (like indexes)
+
+
+
+http://www.slideshare.net/mongodb/mongodb-london-2013understanding-mongodb-storage-for-performance-and-data-safety-by-christian-kvalheim-10gen
